@@ -69,104 +69,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Swift Concurrency" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2024/10/08/Swift%20Concurrency/" class="article-date">
-  <time class="dt-published" datetime="2024-10-08T07:10:18.563Z" itemprop="datePublished">2024-10-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>[TOC]</p>
-<h1 id="Swift-Concurrency"><a href="#Swift-Concurrency" class="headerlink" title="Swift Concurrency"></a>Swift Concurrency</h1><h2 id="Swift-Concurrency与GCD-Grand-Central-Dispatch-的区别"><a href="#Swift-Concurrency与GCD-Grand-Central-Dispatch-的区别" class="headerlink" title="Swift Concurrency与GCD(Grand Central Dispatch)的区别"></a>Swift Concurrency与GCD(Grand Central Dispatch)的区别</h2><p><strong>Swift Concurrency</strong> 和 <strong>GCD(Grand Central Dispatch)</strong> 都是用于处理并发任务的技术，但它们在使用方式和设计理念上有一些明显的区别。</p>
-<p><strong>1. 设计理念</strong></p>
-<ul>
-<li><p><strong>GCD:</strong> GCD 是基于线程池模型的低级别 API，允许开发者通过队列的方式来管理任务的执行。GCD 提供了一个全局的线程池，开发者可以将任务添加到不同的队列（如并发队列或串行队列）来异步执行。它更像是对底层线程和队列的直接控制。</p>
-</li>
-<li><p><strong>Swift Concurrency:</strong> Swift Concurrency 是一种更高级的抽象，基于 <code>async/await</code> 机制，让开发者可以编写异步代码而无需显式地管理队列和线程。它通过 <code>Actors</code> 和 <code>Task</code> 模型来自动处理并发和同步问题，从而减少了并发错误的风险。</p>
-</li>
-</ul>
-<p><strong>2. 编写风格</strong></p>
-<ul>
-<li><strong>GCD：</strong> 使用 GCD 时，开发者需要处理大量的闭包和回调。代码会显得嵌套比较深，尤其是在复杂的异步逻辑中。这种风格容易导致 “回调地狱” 或者使代码的可读性变差。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">DispatchQueue</span>.global().async &#123;</span><br><span class="line">    <span class="comment">// 异步任务</span></span><br><span class="line">    <span class="type">DispatchQueue</span>.main.async &#123;</span><br><span class="line">        <span class="comment">// 回到主线程更新 UI</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>Swift Concurrency：</strong> 使用 <code>async/await</code>，代码更加线性和直观，类似于同步代码的写法。它使得代码结构更清晰，并且大大减少了嵌套。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">func</span> <span class="title function_">fetchData</span>() <span class="keyword">async</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> data <span class="operator">=</span> <span class="keyword">await</span> fetchAsyncData()</span><br><span class="line">    <span class="comment">// 继续处理数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>3. 错误处理</strong></p>
-<ul>
-<li><strong>GCD：</strong> GCD 不直接支持错误处理，开发者必须自己在闭包中处理错误（如通过返回值或者自定义的回调方式）。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假设我们有一个异步任务</span></span><br><span class="line"><span class="keyword">func</span> <span class="title function_">asyncTask</span>(<span class="params">completion</span>: <span class="keyword">@escaping</span> (<span class="type">Error</span>?) -&gt; <span class="type">Void</span>) &#123;</span><br><span class="line">    <span class="comment">// 这里可以是任何异步操作，例如网络请求等</span></span><br><span class="line">    <span class="comment">// 为了示例，我们简单模拟一个错误</span></span><br><span class="line">    <span class="keyword">let</span> error: <span class="type">Error</span>? <span class="operator">=</span> <span class="literal">nil</span> <span class="comment">// 假设有错误发生</span></span><br><span class="line">    completion(error)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">DispatchQueue</span>.main.async &#123;</span><br><span class="line">    asyncTask &#123; error <span class="keyword">in</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">let</span> error <span class="operator">=</span> error &#123;</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;出现错误: <span class="subst">\(error)</span>&quot;</span>)</span><br><span class="line">            <span class="comment">// 这里可以执行错误处理逻辑</span></span><br><span class="line">        &#125;</span><br><span class="line">        group.leave()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>Swift Concurrency：</strong> Swift Concurrency 完全支持 Swift 的错误处理机制。使用 <code>async/await</code> 时，可以与 <code>try</code> 和 <code>throws</code> 结合使用，进行更自然的错误处理。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> result <span class="operator">=</span> <span class="keyword">try</span> <span class="keyword">await</span> someAsyncTask()</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    <span class="comment">// 处理错误</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>4. 任务取消</strong></p>
-<ul>
-<li><strong>GCD：</strong> GCD 没有内置的任务取消机制。如果需要取消任务，开发者需要自己通过某种标志位或者逻辑处理来实现任务的手动取消。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个共享的标志变量</span></span><br><span class="line"><span class="keyword">var</span> isCancelled <span class="operator">=</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">func</span> <span class="title function_">longRunningTask</span>() &#123;</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1</span><span class="operator">...</span><span class="number">10</span> &#123;</span><br><span class="line">        <span class="comment">// 每次循环时检查任务是否被取消</span></span><br><span class="line">        <span class="keyword">if</span> isCancelled &#123;</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;Task was cancelled at iteration <span class="subst">\(i)</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span>  <span class="comment">// 如果被取消则提前退出</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Running task iteration <span class="subst">\(i)</span>&quot;</span>)</span><br><span class="line">        <span class="type">Thread</span>.sleep(forTimeInterval: <span class="number">0.5</span>)  <span class="comment">// 模拟耗时操作</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Task completed&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提交任务到全局队列</span></span><br><span class="line"><span class="type">DispatchQueue</span>.global().async &#123;</span><br><span class="line">    longRunningTask()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模拟一段时间后取消任务</span></span><br><span class="line"><span class="type">DispatchQueue</span>.global().asyncAfter(deadline: .now() <span class="operator">+</span> <span class="number">1</span>) &#123;</span><br><span class="line">    isCancelled <span class="operator">=</span> <span class="literal">true</span>  <span class="comment">// 设置标志位为 true，取消任务</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li><strong>Swift Concurrency：</strong> Swift Concurrency 支持任务的取消机制，可以通过 Task 来控制任务的取消。你可以使用 <code>Task.checkCancellation()</code> 检查任务是否被取消，并根据需要终止任务。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">    <span class="keyword">func</span> <span class="title function_">longRunningTask</span>() <span class="keyword">async</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1</span><span class="operator">...</span><span class="number">10</span> &#123;</span><br><span class="line">            <span class="comment">// 每次循环时检查任务是否被取消</span></span><br><span class="line">            <span class="keyword">if</span> <span class="type">Task</span>.isCancelled &#123;</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&quot;Task was cancelled at iteration <span class="subst">\(i)</span>&quot;</span>)</span><br><span class="line">                <span class="keyword">return</span>  <span class="comment">// 任务取消后退出</span></span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;Running task iteration <span class="subst">\(i)</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">try?</span> <span class="keyword">await</span> <span class="type">Task</span>.sleep(nanoseconds: <span class="number">500_000_000</span>)  <span class="comment">// 模拟耗时操作</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;Task completed&quot;</span>)</span><br><span class="line">    &#125;   </span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> task <span class="operator">=</span> <span class="type">Task</span> &#123;</span><br><span class="line">        <span class="keyword">await</span> longRunningTask()</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">DispatchQueue</span>.main.asyncAfter(deadline: .now() <span class="operator">+</span> .seconds(<span class="number">3</span>), execute: task.cancel)</span><br><span class="line">    <span class="keyword">try</span> <span class="keyword">await</span> <span class="type">Task</span>.sleep(nanoseconds: <span class="number">6_000_000_000</span>)</span><br><span class="line">输出：</span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">1</span></span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">2</span></span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">3</span></span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">4</span></span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">5</span></span><br><span class="line">    <span class="type">Running</span> task iteration <span class="number">6</span></span><br><span class="line">    <span class="type">Task</span> was cancelled at iteration <span class="number">7</span></span><br><span class="line">    <span class="type">Program</span> ended with exit code: <span class="number">0</span></span><br></pre></td></tr></table></figure>
-
-<p><strong>5. 数据同步</strong></p>
-<ul>
-<li><strong>GCD：</strong> 在 GCD 中，开发者需要通过使用同步机制（如锁、信号量等）来确保共享资源的安全访问，容易出现死锁和竞争条件等问题。</li>
-<li><strong>Swift Concurrency：</strong> Swift Concurrency 引入了 <strong>actors</strong> 这种并发模型，来保证对状态的独占访问。通过 actor，开发者可以确保同一时间只有一个任务可以访问某个共享的状态。</li>
-</ul>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">actor</span> <span class="title class_">Counter</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> count <span class="operator">=</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">func</span> <span class="title function_">increment</span>() &#123;</span><br><span class="line">        count <span class="operator">+=</span> <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><strong>6. 性能和调度</strong></p>
-<ul>
-<li><strong>GCD：</strong> GCD 提供了队列的优先级设置，可以根据任务的优先级来调度线程池中的任务。开发者需要手动管理任务的执行顺序和线程的调度。</li>
-<li><strong>Swift Concurrency：</strong> Swift Concurrency 的调度器会根据系统资源和任务的优先级来智能地调度任务。开发者可以通过设置 TaskPriority 来控制任务的优先级，而不需要直接管理线程。</li>
-</ul>
-<p><strong>总结</strong></p>
-<ul>
-<li><strong>GCD</strong> 更适合低级别的任务管理和调度控制，适合那些需要高度自定义和控制的场景。</li>
-<li><strong>Swift Concurrency</strong> 提供了一种更现代化、更安全的方式来处理并发任务，减少了并发编程中的常见问题，代码更加简洁易读，适合绝大多数需要并发执行的场景。</li>
-</ul>
-<h2 id="定义和调用异步函数"><a href="#定义和调用异步函数" class="headerlink" title="定义和调用异步函数"></a>定义和调用异步函数</h2><p>为了表明当前函数或方法是异步的，我们需要在声明时在参数后添加<code>async</code>关键字，类似于抛出异常时添加的<code>throws</code>。示例如下：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">func</span> <span class="title function_">fetchImages</span>(<span class="params">completion</span>: (<span class="type">Result</span>&lt;[<span class="type">UIImage</span>], <span class="type">Error</span>&gt;) -&gt; <span class="type">Void</span>) &#123;</span><br><span class="line">    <span class="comment">// .. 执行数据请求</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">func</span> <span class="title function_">fetchImages</span>() <span class="keyword">async</span> <span class="keyword">throws</span> -&gt; [<span class="type">UIImage</span>] &#123;</span><br><span class="line">  <span class="comment">// ... 执行数据请求 ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><strong>对于同时异步且有异常抛出的函数，<code>async</code>需要写在<code>throws</code>之前。</strong></p>
-<p>当我们调用一个异步方法时，执行在方法返回前会被中断。我们使用<code>await</code>关键字，将其写在调用前以标记可能出现的挂起点。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> images <span class="operator">=</span> <span class="keyword">try</span> <span class="keyword">await</span> fetchImages()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Fetched <span class="subst">\(images.count)</span> images.&quot;</span>)</span><br><span class="line">&#125; <span class="keyword">catch</span> &#123;</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Fetching images failed with error <span class="subst">\(error)</span>&quot;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当我们使用<code>await</code>标记时，当前代码段可能在等待异步函数或方法返回是暂停执行，这也被称为<strong>放弃线程</strong>。因为在后台，Swift会暂停当前线程上的代码执行，并且在该线程上运行其他代码。因为带有<code>await</code>的代码需要能够暂停执行，所以只有程序中的某些地方可以调用异步函数或方法：</p>
-<ul>
-<li>异步函数、方法或属性体中的代码。</li>
-<li>标记为@main的结构、类或枚举的静态main()方法中的代码。</li>
-<li>非结构化子任务中的代码，如下面的<a href="#%E9%9D%9E%E7%BB%93%E6%9E%84%E5%B9%B6%E5%8F%91">非结构化并发</a>中所示。</li>
-</ul>
-<h2 id="非结构并发"><a href="#非结构并发" class="headerlink" title="非结构并发"></a>非结构并发</h2>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2024/10/08/Swift%20Concurrency/" data-id="cm21nrzgu0001bdod68gqdfob" data-title="" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2024/10/07/hello-world/" class="article-date">
@@ -206,7 +108,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2024/10/07/hello-world/" data-id="cm21nrzgp0000bdod58tsa9kw" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2024/10/07/hello-world/" data-id="cm21nu9nj0000anodgrztf5ma" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -247,10 +149,6 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
-        
-          <li>
-            <a href="/2024/10/08/Swift%20Concurrency/">(no title)</a>
-          </li>
         
           <li>
             <a href="/2024/10/07/hello-world/">Hello World</a>
